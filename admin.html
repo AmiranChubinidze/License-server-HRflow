@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>HRFlow — License Admin</title>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: "Segoe UI", system-ui, sans-serif;
+      font-size: 14px;
+      background: #f1f5f9;
+      color: #1e293b;
+      min-height: 100vh;
+    }
+
+    /* ── Top bar ── */
+    .topbar {
+      background: #107537;
+      color: #fff;
+      padding: 0 24px;
+      height: 52px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+    .topbar-logo {
+      width: 30px; height: 30px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 7px;
+      display: flex; align-items: center; justify-content: center;
+      font-weight: 800; font-size: 12px; letter-spacing: -0.5px;
+    }
+    .topbar-title { font-size: 16px; font-weight: 600; }
+    .topbar-sub   { font-size: 12px; opacity: 0.7; margin-top: 1px; }
+    .topbar-spacer { flex: 1; }
+    .topbar-key-form { display: flex; gap: 8px; align-items: center; }
+    .topbar-key-form input {
+      height: 32px;
+      border: none;
+      border-radius: 6px;
+      padding: 0 12px;
+      font-size: 13px;
+      background: rgba(255,255,255,0.15);
+      color: #fff;
+      outline: none;
+      width: 200px;
+    }
+    .topbar-key-form input::placeholder { color: rgba(255,255,255,0.5); }
+    .topbar-key-form input:focus { background: rgba(255,255,255,0.25); }
+    .btn {
+      height: 32px;
+      padding: 0 14px;
+      border: none;
+      border-radius: 6px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex; align-items: center; gap: 6px;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+    .btn:active { transform: scale(0.97); }
+    .btn-white  { background: #fff; color: #107537; }
+    .btn-white:hover { opacity: 0.9; }
+    .btn-green  { background: #107537; color: #fff; }
+    .btn-green:hover { background: #0d6030; }
+    .btn-sm     { height: 28px; padding: 0 10px; font-size: 12px; }
+    .btn-danger { background: #fee2e2; color: #b91c1c; }
+    .btn-danger:hover { background: #fecaca; }
+    .btn-muted  { background: #e2e8f0; color: #475569; }
+    .btn-muted:hover { background: #cbd5e1; }
+
+    /* ── Main ── */
+    .main { max-width: 1100px; margin: 0 auto; padding: 28px 20px; }
+
+    /* ── Auth gate ── */
+    #authGate {
+      display: flex; align-items: center; justify-content: center;
+      min-height: calc(100vh - 52px);
+    }
+    .auth-card {
+      background: #fff;
+      border-radius: 12px;
+      padding: 36px 40px;
+      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      text-align: center;
+      width: 360px;
+    }
+    .auth-card h2 { font-size: 18px; margin-bottom: 6px; }
+    .auth-card p  { color: #64748b; font-size: 13px; margin-bottom: 20px; }
+    .auth-card input {
+      width: 100%; height: 40px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 8px;
+      padding: 0 14px;
+      font-size: 14px;
+      outline: none;
+      margin-bottom: 12px;
+    }
+    .auth-card input:focus { border-color: #107537; box-shadow: 0 0 0 3px rgba(16,117,55,0.1); }
+    .auth-card .btn { width: 100%; justify-content: center; height: 40px; font-size: 14px; }
+    .auth-error { color: #b91c1c; font-size: 12px; margin-top: 8px; }
+
+    /* ── Toolbar ── */
+    .toolbar {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 18px;
+    }
+    .toolbar h1 { font-size: 18px; font-weight: 700; flex: 1; }
+    .stat-pill {
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 4px 12px;
+      font-size: 12px;
+      color: #64748b;
+    }
+    .stat-pill b { color: #1e293b; }
+
+    /* ── Table ── */
+    .card {
+      background: #fff;
+      border-radius: 10px;
+      border: 1px solid #e2e8f0;
+      overflow: hidden;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+    }
+    table { width: 100%; border-collapse: collapse; }
+    thead th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      color: #64748b;
+      padding: 11px 16px;
+      background: #f8fafc;
+      border-bottom: 1px solid #e2e8f0;
+    }
+    tbody tr { border-bottom: 1px solid #f1f5f9; transition: background 0.1s; }
+    tbody tr:last-child { border-bottom: none; }
+    tbody tr:hover { background: #f8fafc; }
+    tbody td { padding: 12px 16px; vertical-align: middle; }
+
+    .key-mono {
+      font-family: "Consolas", "Courier New", monospace;
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      color: #1e293b;
+    }
+    .badge {
+      display: inline-flex; align-items: center;
+      padding: 2px 8px;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-green  { background: #dcfce7; color: #166534; }
+    .badge-red    { background: #fee2e2; color: #991b1b; }
+    .badge-orange { background: #fff7ed; color: #9a3412; }
+    .badge-gray   { background: #f1f5f9; color: #475569; }
+
+    .seats-bar {
+      display: flex; align-items: center; gap: 8px;
+      font-size: 12px;
+    }
+    .seats-track {
+      flex: 1; height: 6px;
+      background: #e2e8f0;
+      border-radius: 3px;
+      overflow: hidden;
+      min-width: 60px;
+    }
+    .seats-fill {
+      height: 100%;
+      background: #107537;
+      border-radius: 3px;
+      transition: width 0.3s;
+    }
+    .seats-fill.full { background: #ef4444; }
+
+    .notes-cell { color: #64748b; font-size: 13px; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    .actions { display: flex; gap: 6px; flex-wrap: wrap; }
+
+    /* ── Machines sub-row ── */
+    .machines-row { display: none; }
+    .machines-row.open { display: table-row; }
+    .machines-inner {
+      padding: 12px 16px 16px 32px;
+      background: #f8fafc;
+      border-top: 1px solid #e2e8f0;
+    }
+    .machines-inner table { border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; }
+    .machines-inner thead th { background: #f1f5f9; }
+    .machine-id-mono { font-family: monospace; font-size: 12px; color: #475569; }
+    .empty-machines { color: #94a3b8; font-size: 13px; padding: 8px 0; }
+
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed; inset: 0;
+      background: rgba(0,0,0,0.4);
+      z-index: 100;
+      align-items: center; justify-content: center;
+    }
+    .modal-overlay.open { display: flex; }
+    .modal {
+      background: #fff;
+      border-radius: 12px;
+      padding: 28px;
+      width: 380px;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.15);
+    }
+    .modal h2 { font-size: 16px; font-weight: 700; margin-bottom: 18px; }
+    .form-row { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; }
+    .form-row label { font-size: 12px; font-weight: 600; color: #64748b; }
+    .form-row input, .form-row select {
+      height: 38px;
+      border: 1.5px solid #e2e8f0;
+      border-radius: 7px;
+      padding: 0 12px;
+      font-size: 14px;
+      outline: none;
+    }
+    .form-row input:focus, .form-row select:focus {
+      border-color: #107537;
+      box-shadow: 0 0 0 3px rgba(16,117,55,0.1);
+    }
+    .modal-actions { display: flex; gap: 8px; justify-content: flex-end; margin-top: 20px; }
+
+    /* ── Toast ── */
+    #toast {
+      position: fixed; bottom: 24px; right: 24px;
+      background: #1e293b;
+      color: #fff;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 13px;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.2s, transform 0.2s;
+      pointer-events: none;
+      z-index: 200;
+    }
+    #toast.show { opacity: 1; transform: translateY(0); }
+
+    .spinner-inline {
+      display: inline-block;
+      width: 14px; height: 14px;
+      border: 2px solid #cbd5e1;
+      border-top-color: #107537;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .empty-state {
+      text-align: center;
+      padding: 48px 20px;
+      color: #94a3b8;
+    }
+    .empty-state p { margin-top: 8px; font-size: 13px; }
+  </style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="topbar">
+  <div class="topbar-logo">HR</div>
+  <div>
+    <div class="topbar-title">HRFlow License Admin</div>
+  </div>
+  <div class="topbar-spacer"></div>
+  <span id="connectedLabel" style="font-size:12px;opacity:0.8;display:none">
+    ● Connected
+  </span>
+  <button class="btn btn-white btn-sm" id="logoutBtn" style="display:none" onclick="logout()">Sign out</button>
+</div>
+
+<!-- Auth gate -->
+<div id="authGate">
+  <div class="auth-card">
+    <h2>Admin Login</h2>
+    <p>Enter your admin key to manage licenses</p>
+    <input type="password" id="authInput" placeholder="Admin key" />
+    <button class="btn btn-green" onclick="doLogin()">Connect</button>
+    <div class="auth-error" id="authError"></div>
+  </div>
+</div>
+
+<!-- Main dashboard (hidden until logged in) -->
+<div class="main" id="dashboard" style="display:none">
+  <div class="toolbar">
+    <h1>License Keys</h1>
+    <span class="stat-pill" id="statPill">Loading…</span>
+    <button class="btn btn-green" onclick="openNewModal()">+ New Key</button>
+    <button class="btn btn-muted btn-sm" onclick="loadKeys()">↻ Refresh</button>
+  </div>
+  <div class="card">
+    <table id="keysTable">
+      <thead>
+        <tr>
+          <th>Key</th>
+          <th>Status</th>
+          <th>Seats</th>
+          <th>Expires</th>
+          <th>Notes</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody id="keysBody">
+        <tr><td colspan="6" style="text-align:center;padding:40px;color:#94a3b8">
+          <span class="spinner-inline"></span> Loading…
+        </td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- New Key Modal -->
+<div class="modal-overlay" id="newModal">
+  <div class="modal">
+    <h2>New License Key</h2>
+    <div class="form-row">
+      <label>Seats (machines)</label>
+      <input type="number" id="newSeats" value="1" min="1" max="999" />
+    </div>
+    <div class="form-row">
+      <label>Expires in (days)</label>
+      <input type="number" id="newDays" value="365" min="1" />
+    </div>
+    <div class="form-row">
+      <label>Notes (client name, org…)</label>
+      <input type="text" id="newNotes" placeholder="e.g. Olympic Pool Tbilisi" />
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-muted" onclick="closeModal('newModal')">Cancel</button>
+      <button class="btn btn-green" onclick="createKey()">Create</button>
+    </div>
+  </div>
+</div>
+
+<!-- Machines Modal -->
+<div class="modal-overlay" id="machinesModal">
+  <div class="modal" style="width:520px">
+    <h2>Active Machines — <span id="machinesModalKey" style="font-family:monospace;font-size:14px"></span></h2>
+    <div id="machinesModalBody" style="margin-bottom:18px"></div>
+    <div class="modal-actions">
+      <button class="btn btn-muted" onclick="closeModal('machinesModal')">Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+'use strict';
+
+const SERVER = location.origin;
+let ADMIN_KEY = sessionStorage.getItem('adminKey') || '';
+
+// ── Auth ──────────────────────────────────────────────────────────────────────
+async function doLogin() {
+  const key = document.getElementById('authInput').value.trim();
+  if (!key) return;
+  document.getElementById('authError').textContent = '';
+
+  try {
+    const r = await api('GET', '/admin/keys', null, key);
+    ADMIN_KEY = key;
+    sessionStorage.setItem('adminKey', key);
+    showDashboard(r);
+  } catch (e) {
+    document.getElementById('authError').textContent =
+      e.message.includes('401') ? 'Invalid admin key.' : 'Cannot reach server.';
+  }
+}
+
+document.getElementById('authInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+function logout() {
+  sessionStorage.removeItem('adminKey');
+  ADMIN_KEY = '';
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('authGate').style.display   = 'flex';
+  document.getElementById('connectedLabel').style.display = 'none';
+  document.getElementById('logoutBtn').style.display  = 'none';
+}
+
+function showDashboard(keys) {
+  document.getElementById('authGate').style.display   = 'none';
+  document.getElementById('dashboard').style.display  = 'block';
+  document.getElementById('connectedLabel').style.display = 'inline';
+  document.getElementById('logoutBtn').style.display  = 'inline-flex';
+  renderKeys(keys);
+}
+
+// Auto-login if key is stored
+if (ADMIN_KEY) {
+  api('GET', '/admin/keys').then(showDashboard).catch(() => {
+    sessionStorage.removeItem('adminKey');
+    ADMIN_KEY = '';
+  });
+}
+
+// ── API helper ────────────────────────────────────────────────────────────────
+async function api(method, path, body, keyOverride) {
+  const key = keyOverride || ADMIN_KEY;
+  const opts = {
+    method,
+    headers: { 'X-Admin-Key': key, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+  };
+  if (body) opts.body = JSON.stringify(body);
+  const r = await fetch(SERVER + path, opts);
+  const json = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(json.detail || `HTTP ${r.status}`);
+  return json;
+}
+
+// ── Load & render keys ────────────────────────────────────────────────────────
+async function loadKeys() {
+  try {
+    const keys = await api('GET', '/admin/keys');
+    renderKeys(keys);
+  } catch (e) {
+    toast('Error: ' + e.message, true);
+  }
+}
+
+function fmtDate(ts) {
+  if (!ts) return '—';
+  return new Date(ts * 1000).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' });
+}
+function daysLeft(ts) {
+  if (!ts) return null;
+  return Math.floor((ts - Date.now() / 1000) / 86400);
+}
+
+function renderKeys(keys) {
+  const active  = keys.filter(k => !k.revoked).length;
+  const total   = keys.length;
+  document.getElementById('statPill').innerHTML =
+    `<b>${active}</b> active / <b>${total}</b> total`;
+
+  const tbody = document.getElementById('keysBody');
+
+  if (!keys.length) {
+    tbody.innerHTML = `<tr><td colspan="6">
+      <div class="empty-state">
+        <div style="font-size:32px">🔑</div>
+        <p>No keys yet. Create one above.</p>
+      </div></td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = keys.map(k => {
+    const dl = daysLeft(k.expires_at);
+    const expired = dl !== null && dl < 0;
+    const expiring = dl !== null && dl >= 0 && dl <= 14;
+
+    let statusBadge;
+    if (k.revoked)  statusBadge = `<span class="badge badge-red">Revoked</span>`;
+    else if (expired) statusBadge = `<span class="badge badge-orange">Expired</span>`;
+    else statusBadge = `<span class="badge badge-green">Active</span>`;
+
+    const used = k.active_seats || 0;
+    const pct  = k.seats > 0 ? Math.min(100, Math.round(used / k.seats * 100)) : 0;
+    const seatsFull = used >= k.seats;
+
+    let expiryStr = fmtDate(k.expires_at);
+    if (dl !== null) {
+      if (expired) expiryStr += ` <span style="color:#b91c1c;font-size:11px">(${Math.abs(dl)}d ago)</span>`;
+      else if (expiring) expiryStr += ` <span style="color:#d97706;font-size:11px">(${dl}d)</span>`;
+    }
+
+    const revokeBtn = k.revoked
+      ? `<button class="btn btn-muted btn-sm" onclick="unrevokeKey('${k.key}')">Unrevoke</button>`
+      : `<button class="btn btn-danger btn-sm" onclick="revokeKey('${k.key}')">Revoke</button>`;
+
+    return `<tr id="row-${k.key}">
+      <td><span class="key-mono">${k.key}</span></td>
+      <td>${statusBadge}</td>
+      <td>
+        <div class="seats-bar">
+          <div class="seats-track"><div class="seats-fill ${seatsFull ? 'full' : ''}" style="width:${pct}%"></div></div>
+          <span style="white-space:nowrap;color:#64748b">${used}/${k.seats}</span>
+        </div>
+      </td>
+      <td style="font-size:13px;white-space:nowrap">${expiryStr}</td>
+      <td class="notes-cell" title="${k.notes || ''}">${k.notes || '<span style=color:#cbd5e1>—</span>'}</td>
+      <td>
+        <div class="actions">
+          <button class="btn btn-muted btn-sm" onclick="showMachines('${k.key}')">Machines</button>
+          <button class="btn btn-muted btn-sm" onclick="renewKey('${k.key}')">Renew</button>
+          ${revokeBtn}
+        </div>
+      </td>
+    </tr>`;
+  }).join('');
+}
+
+// ── Create key ────────────────────────────────────────────────────────────────
+function openNewModal() {
+  document.getElementById('newNotes').value = '';
+  document.getElementById('newModal').classList.add('open');
+  setTimeout(() => document.getElementById('newNotes').focus(), 50);
+}
+
+async function createKey() {
+  const seats = parseInt(document.getElementById('newSeats').value) || 1;
+  const days  = parseInt(document.getElementById('newDays').value) || 365;
+  const notes = document.getElementById('newNotes').value.trim() || null;
+
+  try {
+    const r = await api('POST', '/admin/keys', { seats, expires_days: days, notes });
+    closeModal('newModal');
+    toast(`Key created: ${r.key}`);
+    loadKeys();
+    // Show key in a prompt so user can copy
+    setTimeout(() => {
+      window.prompt('New key (click to copy):', r.key);
+    }, 300);
+  } catch (e) {
+    toast('Error: ' + e.message, true);
+  }
+}
+
+// ── Revoke / Unrevoke ─────────────────────────────────────────────────────────
+async function revokeKey(key) {
+  if (!confirm(`Revoke ${key}?\n\nAll machines will be locked within 7 days.`)) return;
+  try {
+    await api('POST', `/admin/keys/${key}/revoke`);
+    toast(`${key} revoked`);
+    loadKeys();
+  } catch (e) { toast('Error: ' + e.message, true); }
+}
+
+async function unrevokeKey(key) {
+  try {
+    await api('POST', `/admin/keys/${key}/unrevoke`);
+    toast(`${key} re-activated`);
+    loadKeys();
+  } catch (e) { toast('Error: ' + e.message, true); }
+}
+
+// ── Renew ─────────────────────────────────────────────────────────────────────
+async function renewKey(key) {
+  const days = window.prompt(`Renew ${key}\n\nExtend by how many days?`, '365');
+  if (!days) return;
+  const n = parseInt(days);
+  if (!n || n < 1) { toast('Invalid number of days', true); return; }
+  try {
+    const r = await api('POST', `/admin/keys/${key}/renew`, { expires_days: n });
+    toast(`${key} renewed — expires ${fmtDate(r.expires_at)}`);
+    loadKeys();
+  } catch (e) { toast('Error: ' + e.message, true); }
+}
+
+// ── Machines ──────────────────────────────────────────────────────────────────
+async function showMachines(key) {
+  document.getElementById('machinesModalKey').textContent = key;
+  document.getElementById('machinesModalBody').innerHTML =
+    '<span class="spinner-inline"></span> Loading…';
+  document.getElementById('machinesModal').classList.add('open');
+
+  try {
+    const acts = await api('GET', `/admin/keys/${key}/activations`);
+    if (!acts.length) {
+      document.getElementById('machinesModalBody').innerHTML =
+        '<p class="empty-machines">No machines activated on this key.</p>';
+      return;
+    }
+    document.getElementById('machinesModalBody').innerHTML = `
+      <table style="width:100%;border-collapse:collapse;font-size:13px">
+        <thead><tr>
+          <th style="text-align:left;padding:8px 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0;font-size:11px;text-transform:uppercase;color:#64748b">Machine ID</th>
+          <th style="text-align:left;padding:8px 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0;font-size:11px;text-transform:uppercase;color:#64748b">Activated</th>
+          <th style="text-align:left;padding:8px 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0;font-size:11px;text-transform:uppercase;color:#64748b">Last seen</th>
+          <th style="padding:8px 12px;background:#f8fafc;border-bottom:1px solid #e2e8f0"></th>
+        </tr></thead>
+        <tbody>${acts.map(a => `
+          <tr style="border-bottom:1px solid #f1f5f9">
+            <td style="padding:8px 12px"><span class="machine-id-mono">${a.machine_id}</span></td>
+            <td style="padding:8px 12px;color:#64748b">${fmtDate(a.activated_at)}</td>
+            <td style="padding:8px 12px;color:#64748b">${fmtDate(a.last_seen)}</td>
+            <td style="padding:8px 12px">
+              <button class="btn btn-danger btn-sm" onclick="removeMachine('${key}','${a.machine_id}')">Remove</button>
+            </td>
+          </tr>`).join('')}
+        </tbody>
+      </table>`;
+  } catch (e) {
+    document.getElementById('machinesModalBody').innerHTML = `<p style="color:#b91c1c">${e.message}</p>`;
+  }
+}
+
+async function removeMachine(key, mid) {
+  if (!confirm(`Remove machine ${mid} from ${key}?\n\nThis frees a seat.`)) return;
+  try {
+    await api('DELETE', `/admin/keys/${key}/activations/${mid}`);
+    toast('Machine removed — seat freed');
+    showMachines(key); // refresh modal
+    loadKeys();
+  } catch (e) { toast('Error: ' + e.message, true); }
+}
+
+// ── Modal helpers ─────────────────────────────────────────────────────────────
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+document.querySelectorAll('.modal-overlay').forEach(el => {
+  el.addEventListener('click', e => { if (e.target === el) el.classList.remove('open'); });
+});
+
+// ── Toast ─────────────────────────────────────────────────────────────────────
+let _toastTimer;
+function toast(msg, isError) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.style.background = isError ? '#b91c1c' : '#1e293b';
+  el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), 3000);
+}
+</script>
+</body>
+</html>

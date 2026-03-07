@@ -29,7 +29,7 @@ from contextlib import contextmanager
 from typing import Optional
 
 from fastapi import Depends, FastAPI, HTTPException, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 from pydantic import BaseModel
 
 # ── Config ────────────────────────────────────────────────────────────────────
@@ -200,6 +200,11 @@ app = FastAPI(title="HRFlow License Server", docs_url=None, redoc_url=None)
 @app.on_event("startup")
 def on_startup():
     init_db()
+
+
+@app.get("/admin")
+def admin_ui():
+    return FileResponse(os.path.join(os.path.dirname(__file__), "admin.html"))
 
 
 # ── Request / Response models ─────────────────────────────────────────────────
